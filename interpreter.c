@@ -127,9 +127,12 @@ int main ( int argc , char * argv [ ] ) {
 
 void interpreter_init ( char * program_file , char * output , char * input ) {
 	program . file . source = fopen ( program_file , "r" ) ;														//Open the program source file.
+	if ( ! program . file . source ) {																				//Check if the file has not been opened.
+		strcpy ( program . file . message , "Source file doesn't exist." ) ;										//We have hit an unrecoverable error. Set error status and message and call the error procedure function.
+		program . file . status = 5 ;
+		error_procedure ( ) ;
+	}
 	program . file . pointer . position = 0 ;																		//Set the position of the input pointer to 0 ( the start ).
-	program . file . status = 0 ;																					//Set the status to 0 ( meaning executing ).
-	strcpy ( program . file . message , "Interpreting and executing" ) ;											//Set the status message to "Interpreting and executing".
 	program . list . list_position = ( struct program_list_node * ) 
 		malloc ( sizeof ( struct program_list_node ) ) ;															//Create a program list node for the program to operate on. More nodes will be added as required.
 	program . list . list_position -> value = 0 ;																	//Set the value of the current program list node to 0.
@@ -144,10 +147,17 @@ void interpreter_init ( char * program_file , char * output , char * input ) {
 	}
 	if ( input [ 0 ] != '\0' ) {																					//Check if a program input file was specified.
 		program . progin = fopen ( input , "r" ) ;																	//Set the program input as the given file.
+		if ( ! program . progin ) {																					//Check if the file has not been opened.
+			strcpy ( program . file . message , "Program input file doesn't exist." ) ;								//We have hit an unrecoverable error. Set error status and message and call the error procedure function.
+			program . file . status = 5 ;
+			error_procedure ( ) ;
+		}
 	}
 	else {
 		program . progin = stdin ;																					//Set the program output as the standard output.
 	}
+	program . file . status = 0 ;																					//Set the status to 0 ( meaning executing ).
+	strcpy ( program . file . message , "Interpreting and executing" ) ;											//Set the status message to "Interpreting and executing".
 }
 
 void increment_program_list_pointer ( ) {
@@ -208,7 +218,7 @@ void start_loop ( ) {
 		program . list . loop_top = ( struct loop_stack_node * ) malloc ( sizeof ( struct loop_stack_node ) ) ;		//Create a new loop node to signify the start of a loop.
 		program . list . loop_top -> outer_loop_node = NULL ;														//Set the inner loop of the current loop as NULL, since no inner loop has been started yet.
 	}
-	else {
+	else if ( program . list . loop_top -> start_pointer_position != program . file . pointer . position ) {		//Check whether the current loop node is not the loop we're starting at.
 		struct loop_stack_node * tmp = ( struct loop_stack_node * ) malloc ( sizeof ( struct loop_stack_node ) ) ;	//Create a new loop node to which will be at the top of the loop stack ( since it is the one within which all further executions will occur under ).
 		tmp -> outer_loop_node = program . list . loop_top ;														//Set the outer loop of the newly created loop node as the current loop top node.
 		program . list . loop_top  = tmp ;																			//Set the current loop top node as the newly created loop node.
@@ -219,6 +229,12 @@ void start_loop ( ) {
 void skip_loop ( ) {
 	short int skip_flag = 0 ;																						//Set a flag to check whether the skip is successful as 0 ( false )
 	long long inner_loops = 0 ;																						//Set a counter for counting the presence of inner loops within the current loop.
+	if ( ( program . list . loop_top != NULL ) &&
+		( program . list . loop_top -> start_pointer_position == program . file . pointer . position ) ) {			//Check whether the current loop node is the loop we're starting at.
+		struct loop_stack_node * tmp = program . list . loop_top ;													//Store the current loop node in a temporary variable for deletion.
+		program . list . loop_top = program . list . loop_top -> outer_loop_node ;									//Set the current loop as the outer loop node.
+		free ( tmp ) ;																								//Delete the old loop node from the stack.
+	}
 	while ( ( program . file . pointer . value = fgetc ( program . file . source ) ) != EOF ) {						//Read a character from the program source code.
 		program . file . pointer . position = ftell ( program . file . source ) ;									//Get the file cursors current position.
 		if ( program . file . pointer . value == '[' ) {															//Check if we reached the the start of an inner loop.
@@ -250,9 +266,6 @@ void end_loop ( ) {
 			, ( program . list . loop_top -> start_pointer_position - 1 )
 			, SEEK_SET ) ;																							//Set the file pointer to the position just behind the start of the loop.
 		program . file . pointer . position = program . list . loop_top -> start_pointer_position - 1 ;				//Set the pointer position to the position just behind the start of the loop.
-		struct loop_stack_node * tmp = program . list . loop_top ;
-		program . list . loop_top = program . list . loop_top -> outer_loop_node ;									//Set the current loop as the outer loop node.
-		free ( tmp ) ;																								//Delete the old loop node from the stack.
 	}
 }
 
