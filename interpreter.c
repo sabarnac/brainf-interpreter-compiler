@@ -126,7 +126,7 @@ int main ( int argc , char * argv [ ] ) {
 }
 
 void interpreter_init ( char * program_file , char * output , char * input ) {
-	program . file . source = fopen ( program_file , "rb" ) ;														//Open the program source file.
+	program . file . source = fopen ( program_file , "r" ) ;														//Open the program source file.
 	program . file . pointer . position = 0 ;																		//Set the position of the input pointer to 0 ( the start ).
 	program . file . status = 0 ;																					//Set the status to 0 ( meaning executing ).
 	strcpy ( program . file . message , "Interpreting and executing" ) ;											//Set the status message to "Interpreting and executing".
@@ -137,13 +137,13 @@ void interpreter_init ( char * program_file , char * output , char * input ) {
 	program . list . list_position -> previous_node = NULL ;														//Set the previous node after the current list node to NULL.
 	program . list . loop_top = NULL ;																				//Set the loop stack to empty ( since there is no loop running at the start ).
 	if ( output [ 0 ] != '\0' ) {																					//Check if a program output file was specified.
-		program . progout = fopen ( output , "wb" ) ;																//Set the program output as the given file.
+		program . progout = fopen ( output , "w" ) ;																//Set the program output as the given file.
 	}
 	else {
 		program . progout = stdout ;																				//Set the program output as the standard output.
 	}
 	if ( input [ 0 ] != '\0' ) {																					//Check if a program input file was specified.
-		program . progin = fopen ( input , "rb" ) ;																	//Set the program input as the given file.
+		program . progin = fopen ( input , "r" ) ;																	//Set the program input as the given file.
 	}
 	else {
 		program . progin = stdin ;																					//Set the program output as the standard output.
@@ -220,7 +220,7 @@ void skip_loop ( ) {
 	short int skip_flag = 0 ;																						//Set a flag to check whether the skip is successful as 0 ( false )
 	long long inner_loops = 0 ;																						//Set a counter for counting the presence of inner loops within the current loop.
 	while ( ( program . file . pointer . value = fgetc ( program . file . source ) ) != EOF ) {						//Read a character from the program source code.
-		program . file . pointer . position ++ ;																	//Increment the pointer position since we've read a character.
+		program . file . pointer . position = ftell ( program . file . source ) ;									//Get the file cursors current position.
 		if ( program . file . pointer . value == '[' ) {															//Check if we reached the the start of an inner loop.
 			inner_loops ++ ;																						//Increment the inner loop counter.
 		}
@@ -258,7 +258,7 @@ void end_loop ( ) {
 
 void interpreter_exec ( ) {
 	while ( ( program . file . pointer . value = fgetc ( program . file . source ) ) != EOF ) {						//Read a character from the program source code.
-		program . file . pointer . position ++ ;																	//Increment the pointer position since we've read a character.
+		program . file . pointer . position = ftell ( program . file . source ) ;									//Get the file cursors current position.
 		switch ( program . file . pointer . value ) {																//Decide the action to perform depending on the character read from the program.
 			case '>' : increment_program_list_pointer ( ) ; break ;													//Increment the program list pointer and break from the switch.
 			case '<' : decrement_program_list_pointer ( ) ; break ;													//Decrement the program list pointer and break from the switch.
