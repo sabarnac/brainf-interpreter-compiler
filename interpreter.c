@@ -89,7 +89,6 @@ void interpreter_clean ( ) ;
  * The main function that starts the interpreter.
  */
 int main ( int argc , char * argv [ ] ) {
-	clock_t start = clock ( ) ;
 	if ( ( argc < 2 ) || ( argc > 5 ) ) {																			//Check if parameters have been provided for interpretation and execution of a program.
 		printf ( "Usage: %s <source file> [<program input file>] [<program output file>] [time]"
 			, argv [ 0 ] ) ;																						//If an invalid number of arguments have been provided, the correct usage is shown.
@@ -97,13 +96,13 @@ int main ( int argc , char * argv [ ] ) {
 		return -1 ;																									//Terminate the interpreter since nothing else can be done.
 	}
 	char input [ 65536 ] , output [ 65536 ] ;																		//Two character pointers which will help determine the input and outputs of the program on initialization.
-	if ( ( argc == 3 ) && ( strcmp ( argv [ 2 ] , "stdout" ) ) ) {												//Check if a second argument was provided which is supposed to be the file into which program output is written.
+	if ( ( argc >= 3 ) && ( strcmp ( argv [ 2 ] , "stdout" ) ) ) {													//Check if a second argument was provided which is supposed to be the file into which program output is written.
 		strcpy ( output , argv [ 2 ] ) ;																			//Set the file as the program output since it was passed as a parameter.
 	}
 	else {
 		output [ 0 ] = '\0' ;																						//Set the file as the program output which means to just use the standard output.
 	}
-	if ( ( argc == 4 ) && ( strcmp ( argv [ 3 ] , "stdin" ) ) ) {													//Check if a third argument was provided which is supposed to be the file from which program input is read.
+	if ( ( argc >= 4 ) && ( strcmp ( argv [ 3 ] , "stdin" ) ) ) {													//Check if a third argument was provided which is supposed to be the file from which program input is read.
 		strcpy ( input , argv [ 3 ] ) ;																				//Set the file as the program input since it was passed as a parameter.
 	}
 	else {
@@ -111,26 +110,24 @@ int main ( int argc , char * argv [ ] ) {
 	}
 	
 	interpreter_init ( argv [ 1 ] , output , input ) ;																//Initialize the interpreter.
-	interpreter_exec ( ) ;																							//Execute the interpreter.
-	interpreter_clean ( ) ;																							//Clean up after the interpreter.
 
-	if ( ( argc == 5 ) && ( ! strcmp ( argv [ 4 ] , "time" ) ) ) {													//Check if a fourth argument was provided which is supposed to tell the interpreter to show the final execution time.
-		double cpu_time_used = ( ( double ) ( clock ( ) - start ) ) / CLOCKS_PER_SEC ;										//Calculate the total CPU time used for execution.
+	clock_t start = clock ( ) ;																						//Get the start clock just before execution.
+	interpreter_exec ( ) ;																							//Execute the interpreter.
+	if ( ( argc >= 5 ) && ( ! strcmp ( argv [ 4 ] , "time" ) ) ) {													//Check if a fourth argument was provided which is supposed to tell the interpreter to show the final execution time.
+		double cpu_time_used = ( ( double ) ( clock ( ) - start ) ) / CLOCKS_PER_SEC ;								//Calculate the total CPU time used for execution.
 		fprintf ( program . progout , "\n\n------------------" ) ;
-		fprintf ( program . progout , "\nCPU time used : %f" , cpu_time_used ) ;										//Output the total CPU time used.
+		fprintf ( program . progout , "\nCPU time used : %f" , cpu_time_used ) ;									//Output the total CPU time used.
 		fprintf ( program . progout , "\n------------------\n\n" ) ;
 	}
+
+	interpreter_clean ( ) ;																							//Clean up after the interpreter.
 	
 	return program . file . status ;																				//Return the final program status.
 }
 
 void interpreter_init ( char * program_file , char * output , char * input ) {
-	program . file . source = fopen ( program_file , "r" ) ;														//Open the program source file.
-	program . file . pointer . value = fgetc ( program . file . source ) ;											//Read the first character of the program.
+	program . file . source = fopen ( program_file , "rb" ) ;														//Open the program source file.
 	program . file . pointer . position = 0 ;																		//Set the position of the input pointer to 0 ( the start ).
-	fseek ( program . file . source
-		, program . file . pointer . position
-		, SEEK_SET ) ;																								//Set the file pointer to the programs' input pointer position
 	program . file . status = 0 ;																					//Set the status to 0 ( meaning executing ).
 	strcpy ( program . file . message , "Interpreting and executing" ) ;											//Set the status message to "Interpreting and executing".
 	program . list . list_position = ( struct program_list_node * ) 
@@ -140,13 +137,13 @@ void interpreter_init ( char * program_file , char * output , char * input ) {
 	program . list . list_position -> previous_node = NULL ;														//Set the previous node after the current list node to NULL.
 	program . list . loop_top = NULL ;																				//Set the loop stack to empty ( since there is no loop running at the start ).
 	if ( output [ 0 ] != '\0' ) {																					//Check if a program output file was specified.
-		program . progout = fopen ( output , "w" ) ;																//Set the program output as the given file.
+		program . progout = fopen ( output , "wb" ) ;																//Set the program output as the given file.
 	}
 	else {
 		program . progout = stdout ;																				//Set the program output as the standard output.
 	}
 	if ( input [ 0 ] != '\0' ) {																					//Check if a program input file was specified.
-		program . progin = fopen ( input , "r" ) ;																	//Set the program input as the given file.
+		program . progin = fopen ( input , "rb" ) ;																	//Set the program input as the given file.
 	}
 	else {
 		program . progin = stdin ;																					//Set the program output as the standard output.
@@ -190,15 +187,15 @@ void decrement_program_list_pointer_value ( ) {
 }
 
 void output_program_list_pointer_value ( ) {
-	fputc ( program . list . list_position -> value , program . progout ) ;								//Output the value of the current program stack node.
+	fputc ( program . list . list_position -> value , program . progout ) ;											//Output the value of the current program stack node.
 }
 
 void input_program_list_pointer_value ( ) {
-	program . list . list_position -> value = fgetc ( program . progin ) ;									//Take input of the value of the current program stack node.
+	program . list . list_position -> value = fgetc ( program . progin ) ;											//Take input of the value of the current program stack node.
 }
 
 int check_start_loop ( ) {
-	if ( program . list . list_position -> value ) {																//Check if the value of the current program stack node is not 0.
+	if ( program . list . list_position -> value != 0 ) {															//Check if the value of the current program stack node is not 0.
 		return 1 ;																									//Return 1 ( true ) as the value of the current program stack node is not 0.
 	}
 	else {
@@ -221,9 +218,16 @@ void start_loop ( ) {
 
 void skip_loop ( ) {
 	short int skip_flag = 0 ;																						//Set a flag to check whether the skip is successful as 0 ( false )
+	long long inner_loops = 0 ;																						//Set a counter for counting the presence of inner loops within the current loop.
 	while ( ( program . file . pointer . value = fgetc ( program . file . source ) ) != EOF ) {						//Read a character from the program source code.
 		program . file . pointer . position ++ ;																	//Increment the pointer position since we've read a character.
-		if ( program . file . pointer . value == ']' ) {															//Check if we reach the end of the started loop.
+		if ( program . file . pointer . value == '[' ) {															//Check if we reached the the start of an inner loop.
+			inner_loops ++ ;																						//Increment the inner loop counter.
+		}
+		else if ( ( inner_loops != 0 ) && ( program . file . pointer . value == ']' ) ) {							//Check if we reached the end of an inner loop.
+			inner_loops -- ;																						//Decrement the inner loop counter.
+		}
+		else if ( ( inner_loops == 0 ) && ( program . file . pointer . value == ']' ) ) {							//Check if we reached the end of the started loop.
 			skip_flag = 1 ;																							//Set the loop skipped flag to 1 ( true )
 			break ;																									//Break from the input parsing loop.
 		}
