@@ -13,3 +13,6 @@ A basic interpreter and compiler written for the BrainF language, an esoteric pr
                                        Set to nothing to ignore
 
 All previous parameters are required for a parameter to be used.
+
+## Compiler Usage
+*coming soon*
