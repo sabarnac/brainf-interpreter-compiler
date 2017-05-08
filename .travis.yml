@@ -1,5 +1,7 @@
 language: c
-compiler: gcc
+compiler:
+ - gcc
+ - g++
 before_install:
  - sudo apt-get install gcc
  - sudo apt-get install g++
