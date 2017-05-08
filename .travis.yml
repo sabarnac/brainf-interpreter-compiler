@@ -1,0 +1,11 @@
+language: c
+compiler: gcc
+before_install:
+ - sudo apt-get install gcc
+ - sudo apt-get install g++
+ - sudo apt-get install qtchooser
+ - sudo apt-get install qt5-default
+script:
+ - qmake
+ - make
+ - ./interpreter_test_qmake test.bf stdout input.txt time
