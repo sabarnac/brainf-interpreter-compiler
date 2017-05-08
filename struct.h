@@ -7,7 +7,7 @@
 	 * A node of the main list which is manipulated by the program.
 	 */
 	struct program_list_node {
-		long long value ;														//The value of the node in the list.
+		uint8_t value ;															//The value of the node in the list.
 		struct program_list_node * previous_node ;								//The pointer to the previous node in the list, if any.
 		struct program_list_node * next_node ;									//The pointer to the next node in the list, if any.
 	} ;
@@ -42,7 +42,7 @@
 	struct input_file {
 		FILE * source ;															//The program file being interpreted.
 		struct input_pointer pointer ;											//The current input position details.
-		short int status ;														//The status of the program being interpreted.
+		uint8_t status ;														//The status of the program being interpreted.
 		char message [ 65536 ] ;												//A message about the current status of the program being interpreted.
 	} ;
 	

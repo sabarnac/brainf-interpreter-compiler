@@ -8,6 +8,7 @@
  */
 
 //Header files 
+# include <stdint.h>
 # include <stdio.h>
 # include <stdlib.h>
 # include <string.h>
@@ -127,7 +128,7 @@ int main ( int argc , char * argv [ ] ) {
 
 void interpreter_init ( char * program_file , char * output , char * input ) {
 	program . file . source = fopen ( program_file , "r" ) ;														//Open the program source file.
-	if ( ! program . file . source ) {																				//Check if the file has not been opened.
+	if ( program . file . source == NULL ) {																				//Check if the file has not been opened.
 		strcpy ( program . file . message , "Source file doesn't exist." ) ;										//We have hit an unrecoverable error. Set error status and message and call the error procedure function.
 		program . file . status = 5 ;
 		error_procedure ( ) ;
@@ -140,16 +141,16 @@ void interpreter_init ( char * program_file , char * output , char * input ) {
 	program . list . list_position -> previous_node = NULL ;														//Set the previous node after the current list node to NULL.
 	program . list . loop_top = NULL ;																				//Set the loop stack to empty ( since there is no loop running at the start ).
 	if ( output [ 0 ] != '\0' ) {																					//Check if a program output file was specified.
-		program . progout = fopen ( output , "w" ) ;																//Set the program output as the given file.
+		program . progout = fopen ( output , "wb" ) ;																//Set the program output as the given file.
 	}
 	else {
 		program . progout = stdout ;																				//Set the program output as the standard output.
 	}
 	if ( input [ 0 ] != '\0' ) {																					//Check if a program input file was specified.
-		program . progin = fopen ( input , "r" ) ;																	//Set the program input as the given file.
-		if ( ! program . progin ) {																					//Check if the file has not been opened.
+		program . progin = fopen ( input , "rb" ) ;																	//Set the program input as the given file.
+		if ( program . progin == NULL ) {																					//Check if the file has not been opened.
 			strcpy ( program . file . message , "Program input file doesn't exist." ) ;								//We have hit an unrecoverable error. Set error status and message and call the error procedure function.
-			program . file . status = 5 ;
+			program . file . status = 6 ;
 			error_procedure ( ) ;
 		}
 	}
