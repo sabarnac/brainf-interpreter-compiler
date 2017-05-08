@@ -1,12 +1,5 @@
 language: c
-compiler:
- - gcc
- - clang
-before_install:
- - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
- - sudo apt-get update -qq
- - sudo apt-get install gcc
- - sudo apt-get install g++
+compiler: gcc
 script:
  - qmake
  - make
