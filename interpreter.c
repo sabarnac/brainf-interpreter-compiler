@@ -7,7 +7,7 @@
  * @license MIT License
  */
 
-//Header files 
+//Header files
 # include <stdint.h>
 # include <stdio.h>
 # include <stdlib.h>
@@ -91,7 +91,7 @@ void interpreter_clean ( ) ;
  */
 int main ( int argc , char * argv [ ] ) {
 	if ( ( argc < 2 ) || ( argc > 5 ) ) {																			//Check if parameters have been provided for interpretation and execution of a program.
-		printf ( "Usage: %s <source file> [<program input file>] [<program output file>] [time]"
+		printf ( "Usage: %s <source file> [<program input file> [<program output file> [time]]]"
 			, argv [ 0 ] ) ;																						//If an invalid number of arguments have been provided, the correct usage is shown.
 		getchar ( ) ;																								//Take any character input ( this is blocking so the program is paused ).
 		return -1 ;																									//Terminate the interpreter since nothing else can be done.
