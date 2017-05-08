@@ -1,4 +1,4 @@
-# BrainF Interpreter And Compiler
+# BrainF Interpreter And Compiler [![Build Status](https://travis-ci.org/sabarnac/brainf-interpreter-compiler.svg?branch=master)](https://travis-ci.org/sabarnac/brainf-interpreter-compiler)
 A basic interpreter and compiler written for the BrainF language, an esoteric programming language.
 
 ## Interpreter Usage
