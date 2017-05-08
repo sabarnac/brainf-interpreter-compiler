@@ -130,7 +130,7 @@ void interpreter_init ( char * program_file , char * output , char * input ) {
 	program . file . source = fopen ( program_file , "r" ) ;														//Open the program source file.
 	if ( program . file . source == NULL ) {																				//Check if the file has not been opened.
 		strcpy ( program . file . message , "Source file doesn't exist." ) ;										//We have hit an unrecoverable error. Set error status and message and call the error procedure function.
-		program . file . status = 5 ;
+		program . file . status = -2 ;
 		error_procedure ( ) ;
 	}
 	program . file . pointer . position = 0 ;																		//Set the position of the input pointer to 0 ( the start ).
@@ -150,14 +150,14 @@ void interpreter_init ( char * program_file , char * output , char * input ) {
 		program . progin = fopen ( input , "rb" ) ;																	//Set the program input as the given file.
 		if ( program . progin == NULL ) {																					//Check if the file has not been opened.
 			strcpy ( program . file . message , "Program input file doesn't exist." ) ;								//We have hit an unrecoverable error. Set error status and message and call the error procedure function.
-			program . file . status = 6 ;
+			program . file . status = -3 ;
 			error_procedure ( ) ;
 		}
 	}
 	else {
 		program . progin = stdin ;																					//Set the program output as the standard output.
 	}
-	program . file . status = 0 ;																					//Set the status to 0 ( meaning executing ).
+	program . file . status = 1 ;																					//Set the status to 0 ( meaning executing ).
 	strcpy ( program . file . message , "Interpreting and executing" ) ;											//Set the status message to "Interpreting and executing".
 }
 
@@ -251,7 +251,7 @@ void skip_loop ( ) {
 	}
 	if ( ! skip_flag ) {																							//Check if the loop has not been skipped.
 		strcpy ( program . file . message , "Unmatched start loop encountered." ) ;									//We have hit an unrecoverable error. Set error status and message and call the error procedure function.
-		program . file . status = 2 ;
+		program . file . status = -3 ;
 		error_procedure ( ) ;
 	}
 }
@@ -259,7 +259,7 @@ void skip_loop ( ) {
 void end_loop ( ) {
 	if ( program . list . loop_top == NULL ) {																		//Check if a loop stack has been started.
 		strcpy ( program . file . message , "Unmatched end loop encountered." ) ;									//We have hit an unrecoverable error. Set error status and message and call the error procedure function.
-		program . file . status = 3 ;
+		program . file . status = -4 ;
 		error_procedure ( ) ;
 	}
 	else {
@@ -287,6 +287,8 @@ void interpreter_exec ( ) {
 			default : break ;																						//Do nothing because every other character is treated as a comment and is to be ignored.
 		}
 	}
+	strcpy ( program . file . message , "Cleaning up." ) ;															//We have hit an unrecoverable error. Set error status and message and call the error procedure function.
+	program . file . status = 2 ;
 }
 
 void clean_program_list ( ) {
@@ -319,8 +321,6 @@ void clean_loop_stack ( ) {
 
 void interpreter_clean ( ) {
 	fclose ( program . file . source ) ;																			//Close the program source file.
-	program . file . status = 1 ;																					//Set the status to 1 ( meaning completed ).
-	strcpy ( program . file . message , "Completed" ) ;																//Set the status message to "Completed".
 	clean_program_list ( ) ;																						//Free the program list from memory.
 	if ( program . list . loop_top != NULL ) {																		//Check if an loop stack exists.
 		clean_loop_stack ( ) ;																						//Free the loop list from memory since it exists.
@@ -331,4 +331,6 @@ void interpreter_clean ( ) {
 	if ( program . progin != stdin ) {																				//Check if the program input is not the standard input.
 		fclose ( program . progin ) ;																				//Close the program input file.
 	}
+	program . file . status = 0 ;																					//Set the status to 1 ( meaning completed ).
+	strcpy ( program . file . message , "Completed" ) ;																//Set the status message to "Completed".
 }
