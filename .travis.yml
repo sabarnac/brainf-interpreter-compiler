@@ -1,8 +1,9 @@
 language: c
 compiler:
  - gcc
- - g++
+ - clang
 before_install:
+ - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
  - sudo apt-get install gcc
  - sudo apt-get install g++
  - sudo apt-get install qtchooser
